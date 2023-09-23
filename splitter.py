@@ -35,10 +35,9 @@ def split_file(
             # Check if the merged segment duration is within the maximum duration
             if len(segment) + len(next_segment) > max_segment_duration:
                 break
-            merged_segment = segment + next_segment
 
-            print("Big Chunkus")
-            segment = merged_segment
+            print(f"Merging Segments {i} & {i+1}")
+            segment = segment + next_segment
             segment_duration = len(segment)
             segments.pop(i + 1)  # Remove the next segment from the list
 
@@ -47,16 +46,18 @@ def split_file(
         while segment_duration > max_segment_duration:
             # Truncate the segment to the maximum duration
             store = segment[:max_segment_duration]
-            print("Export Truncus", seg_idx)
+            print("Export Truncated", seg_idx)
             store.export(f"{export_folder}/{base_file_name}_{seg_idx}-trunc.{export_format}", format=export_format)
             loop_idx += 1
             seg_idx += 1
-            cur_seg_off = max_segment_duration * loop_idx
-            if cur_seg_off < len(segment):
-                segment = segment[cur_seg_off:cur_seg_off+max_segment_duration]
-            segment_duration = len(segment)
+            if len(segment) > max_segment_duration:
+                segment = segment[max_segment_duration:]
+                segment_duration = len(segment)
+            else:
+                segment_duration = 0
 
-        # Export the segment to a file
-        print("Export Chunkus", seg_idx)
-        segment.export(f"{export_folder}/{base_file_name}_{seg_idx}.{export_format}", format=export_format)
-        seg_idx += 1
+        if segment_duration:
+            # Export the segment to a file
+            print("Export Chunk", seg_idx)
+            segment.export(f"{export_folder}/{base_file_name}_{seg_idx}.{export_format}", format=export_format)
+            seg_idx += 1
